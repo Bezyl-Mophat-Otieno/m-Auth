@@ -30,10 +30,20 @@ const defaultSigningOptions = {
     signingKey: process.env.JWT_SECRET_KEY || process.env.ENV === "production" ? null : "security_not_a_concern",
     issuer: process.env.JWT_ISSUER || "localhost",
     durationInMinutes: Number(process.env.JWT_DURATION || 12*60),
-    clockTolerance: Number(process.env.JWT_CLOCK_TOLERANCE ||0),
+    clockTolerance: Number(process.env.JWT_CLOCK_TOLERANCE || 0),
     ignoreExpiration: false
 
 }
+
+const ENV ={
+  signingKey:process.env.JWT_SECRET_KEY,
+  issuer: process.env.JWT_ISSUER,
+  durationInMinutes: process.env.JWT_DURATION,
+  clockTolerance: process.env.JWT_CLOCK_TOLERANCE,
+  audience:process.env.JWT_TOKEN_AUDIENCE
+}
+
+
 
 defaultSigningOptions.audience = process.env.JWT_TOKEN_AUDIENCE || defaultSigningOptions.issuer;
 
