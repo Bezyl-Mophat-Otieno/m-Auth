@@ -1,7 +1,27 @@
 import nodemailer from 'nodemailer';
+let mailOptionsSchema = {
+   /** The e-mail address of the sender. All e-mail addresses can be plain 'sender@server.com' or formatted 'Sender Name <sender@server.com>' */
+    from:process.env.SYS_ADMIN_EMAIL || "",
+   /** Comma separated list or an array of recipients e-mail addresses that will appear on the To: field */
+    to:"",
+   /** The subject of the e-mail */
+    subject:"",
+   /** The subject of the e-mail */
+    text:"",
+   /** The HTML version of the message */
+    html: "",
+   /** An array of attachment objects */
+    attachments:[]
+}
 
+// Creating transporter helper function
+const createTransporter = (config)=>{
+    
+    return nodemailer.createTransport(config);
+}
 
-let config = {
+const sendMail = async (mailOptions)=>{
+    let configSchema = {
     host:process.env.EMAIL_HOST || "",
     server:process.env.EMAIL_SERVER || "",
     port:process.env.EMAIL_PORT || "",
@@ -11,61 +31,27 @@ let config = {
     }
 
 }
-
-let mailOptions = {
-    from:process.env.SYS_ADMIN_EMAIL || "",
-    to:"",
-    subject:"",
-    text:"",
-    html: "",
-    attachments:[]
+    const ENV = {
+    EMAIL_HOST:process.env.EMAIL_HOST || "",
+    EMAIL_SERVER:process.env.EMAIL_SERVER || "",
+    EMAIL_PORT:process.env.EMAIL_PORT || "",
+    SYS_ADMIN_EMAIL:process.env.SYS_ADMIN_EMAIL || "",
+    SYS_ADMIN_EMAIL_PWD:process.env.SYS_ADMIN_EMAIL_PWD || ""
 }
-
-const ENV = {
-    host:process.env.EMAIL_HOST || "",
-    server:process.env.EMAIL_SERVER || "",
-    port:process.env.EMAIL_PORT || "",
-    user:process.env.SYS_ADMIN_EMAIL || "",
-    pass:process.env.SYS_ADMIN_EMAIL_PWD || ""
-}
-
-
-// Creating transporter 
-const createTransporter = (config)=>{
-
     // checking for environment variables
+    console.log(configSchema)
     for (const key in ENV) {
-        if(key==="host" && ENV[key===""]) throw new Error("EMAIL_HOST env not found");
-        if(key==="server" && ENV[key===""]) throw new Error("EMAIL_SERVER env not found");
-        if(key==="port" && ENV[key===""])throw new Error("EMAIL_PORT env not found");
-        if(key==="user" && ENV[key].user ==="") throw new Error ("SYS_ADMIN_EMAIL env not found")
-        if(key==="pass"&& ENV[key].pass ==="") throw new Error ("SYS_ADMIN_EMAIL_PWD env not found");
+        if(!ENV[key]) throw new Error(`${key} env must be set in the environement variables`);
     }
-    
-    return nodemailer.createTransport(config);
-}
-
-const sendMail = async (mailOptions)=>{
-    for (const key in mailOptions) {
-        if(!(mailOptions instanceof Object)) throw new Error("Create a mail options object with the required properties")
-        if (key==="from" && mailOptions[key]==="") throw new Error("From: cannot be empty or undefined") 
-        if(key==="to" && !mailOptions[key]) throw new Error("To: cannot be empty or undefined")
-        if(key==="subject" && !mailOptions[key]) throw new Error("Subject: cannot be empty or undefined")
+    if(!(mailOptions instanceof Object)) throw new Error("mailOptions must be an object");
+    for (const key in mailOptionsSchema) {
+        if( !(key in mailOptions)) throw new Error(`mailOptions must have ${key} property`);
     }
-
-
-const transporter = createTransporter(config);
-let isValid = false;
- 
-transporter.verify().then(()=>{
-   console.log("Transporter verified");
-   isValid = true;
-}).catch((error)=>{ 
-    isValid = false;
-    console.log("Error verifying transporter",error);
-    throw new Error(error);
+    if(mailOptions.text === "" && mailOptions.html === "") throw new Error("text or html content must be set");
+    if(mailOptions.attachments && !Array.isArray(mailOptions.attachments)) throw new Error("attachments must be an array");
     
-}) 
+const transporter = createTransporter(configSchema);
+let isValid = await transporter.verify();
 
 if(!isValid){
     throw new Error("Invalid transporter");
@@ -76,9 +62,8 @@ if(!isValid){
             throw new Error(error);
         }
         console.log("Mail sent",info.response);
-        return info
+        
  })
-
 }
 
-export {createTransporter , sendMail}
+export {sendMail}

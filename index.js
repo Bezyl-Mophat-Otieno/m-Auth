@@ -1,4 +1,4 @@
-import { createTransporter , sendMail } from "./authentication";
-import { generateToken , refreshToken , validateToken } from "./tokenization";
+import { sendMail } from "./authentication.js";
+import { generateToken , refreshToken , validateToken } from "./tokenization.js";
 
-export { createTransporter , sendMail , generateToken , refreshToken , validateToken}
+export { sendMail , generateToken , refreshToken , validateToken}
