@@ -34,11 +34,6 @@ const defaultSigningOptions = {
     ignoreExpiration: false
 }
 
-
-
-
-
-
 defaultSigningOptions.audience = process.env.JWT_TOKEN_AUDIENCE || defaultSigningOptions.issuer;
 
 const generateToken = (data,opts={})=>{
